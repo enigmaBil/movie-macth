@@ -1,20 +1,21 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      Blank
-    </ion-title>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
+<ion-app>
+  <ion-header>
+    <ion-toolbar color="primary">
+      <ion-title>Movie Match ✅</ion-title>
     </ion-toolbar>
   </ion-header>
+  <ion-content class="ion-padding">
+    <h2>Statut des services :</h2>
+    @if (authReady) {
+      <p>✅ Firebase Auth prêt</p>
+    }
 
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
-  </div>
-</ion-content>
+    @if (firestoreReady) {
+      <p>✅ Firestore prêt</p>
+    }
+
+    @if (tmdbReady) {
+      <p>✅ TMDb config prêt</p>
+    }
+  </ion-content>
+</ion-app>
