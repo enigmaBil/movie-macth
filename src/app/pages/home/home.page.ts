@@ -8,7 +8,7 @@ import { environment } from 'src/environments/environment';
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
-  imports: [IonApp, IonHeader, IonToolbar, IonTitle, IonContent, IonApp],
+  imports: [IonHeader, IonToolbar, IonTitle, IonContent],
 })
 export class HomePage {
   authReady = false;

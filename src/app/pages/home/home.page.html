@@ -1,21 +1,13 @@
-<ion-app>
-  <ion-header>
-    <ion-toolbar color="primary">
-      <ion-title>Movie Match ✅</ion-title>
-    </ion-toolbar>
-  </ion-header>
-  <ion-content class="ion-padding">
-    <h2>Statut des services :</h2>
-    @if (authReady) {
-      <p>✅ Firebase Auth prêt</p>
-    }
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>Movie-Match</ion-title>
+  </ion-toolbar>
+</ion-header>
 
-    @if (firestoreReady) {
-      <p>✅ Firestore prêt</p>
-    }
-
-    @if (tmdbReady) {
-      <p>✅ TMDb config prêt</p>
-    }
-  </ion-content>
-</ion-app>
+<ion-content>
+  <!-- Contenu de la page d'accueil (liste de films, etc.) -->
+  <div class="ion-padding">
+    <h1>Bienvenue sur Movie-Match !</h1>
+    <p>Découvrez des films recommandés rien que pour vous.</p>
+  </div>
+</ion-content>
