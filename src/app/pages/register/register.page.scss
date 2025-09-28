@@ -1,0 +1,63 @@
+.login-background {
+  --background: url('/assets/bg.jpg') no-repeat center center / cover;
+  position: relative;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5); /* Overlay pour lisibilité */
+  z-index: 1;
+}
+
+.centered-card-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+  padding: 16px; /* évite le collage aux bords sur mobile */
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px; /* idéal pour formulaire */
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+
+  ion-card-content {
+    padding: 24px 0; /* padding vertical */
+  }
+
+  h2 {
+    margin-bottom: 24px;
+  }
+}
+
+.link {
+  color: var(--ion-color-primary);
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:hover,
+  &:focus {
+    opacity: 0.8;
+    text-decoration: underline;
+  }
+}
+
+/* Mobile très petit */
+@media (max-width: 320px) {
+  .login-card {
+    max-width: 290px;
+  }
+}

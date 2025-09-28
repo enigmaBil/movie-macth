@@ -5,6 +5,12 @@ import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular/standalo
 import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
 import { appConfig } from './app/app.config';
+import { addIcons } from 'ionicons';
+import { heart, heartCircle, home, person, personCircle } from 'ionicons/icons';
+
+addIcons({ home});
+addIcons({ heart });
+addIcons({ person });
 
 bootstrapApplication(AppComponent, {
   providers: [

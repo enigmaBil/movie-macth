@@ -1,0 +1,83 @@
+<ion-content class="login-background">
+  <div class="overlay"></div>
+
+  <!-- Conteneur centré -->
+  <div class="centered-card-container">
+    <ion-card class="login-card">
+      <ion-card-content>
+        <!-- Titre déplacé DANS la card -->
+        <h2 class="ion-text-center ion-margin-top ion-padding-horizontal" style="font-weight: 700;">
+          Connexion
+        </h2>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="ion-padding-horizontal">
+          @if (authError) {
+            <ion-text color="danger" class="ion-margin-bottom ion-padding-horizontal">
+              {{ authError }}
+            </ion-text>
+          }
+
+          <!-- Champ Email -->
+          <ion-item lines="full" class="ion-margin-vertical">
+            <ion-label position="stacked">Email</ion-label>
+            <ion-input
+              type="email"
+              formControlName="email"
+              inputmode="email"
+              aria-label="Adresse email"
+            ></ion-input>
+          </ion-item>
+
+          @if (email.touched && email.invalid) {
+            <ion-text color="danger" class="ion-margin-bottom ion-padding-start">
+              @if (email.errors?.['required']) {
+                <small>L'email est requis.</small>
+              } @else if (email.errors?.['email']) {
+                <small>Format d'email invalide.</small>
+              }
+            </ion-text>
+          }
+
+          <!-- Champ Mot de passe -->
+          <ion-item lines="full" class="ion-margin-vertical">
+            <ion-label position="stacked">Mot de passe</ion-label>
+            <ion-input
+              type="password"
+              formControlName="password"
+              aria-label="Mot de passe"
+            ></ion-input>
+          </ion-item>
+
+          @if (password.touched && password.invalid) {
+            <ion-text color="danger" class="ion-margin-bottom ion-padding-start">
+              @if (password.errors?.['required']) {
+                <small>Le mot de passe est requis.</small>
+              } @else if (password.errors?.['minlength']) {
+                <small>Le mot de passe doit contenir au moins 6 caractères.</small>
+              }
+            </ion-text>
+          }
+
+          <!-- Bouton de soumission -->
+          <ion-button
+            expand="block"
+            type="submit"
+            [disabled]="isSubmitting || form.invalid"
+            class="ion-margin-top ion-margin-bottom"
+          >
+            Se connecter
+          </ion-button>
+        </form>
+        <div class="ion-text-center ion-padding-horizontal ion-margin-bottom">
+          <p>
+            <a routerLink="/forgot-password" class="link">Mot de passe oublié ?</a>
+          </p>
+          <p class="ion-margin-top">
+            Pas encore de compte ?&nbsp;
+            <a routerLink="/register" class="link">S'inscrire</a>
+          </p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>
