@@ -1,6 +1,6 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="primary">
-    <ion-title>Movie-Match</ion-title>
+    <ion-title>Mon Profil</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="logout()" fill="clear" color="light">
         <ion-icon name="log-out-outline"></ion-icon>
@@ -9,50 +9,54 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <div class="profile-page">
-    <div class="profile-card">
-      <div class="avatar-wrap">
-        <ion-avatar class="avatar-lg">
-          <ng-container *ngIf="profileImagePreview; else userAvatar">
-            <img [src]="profileImagePreview" alt="Aperçu" />
-          </ng-container>
-          <ng-template #userAvatar>
-            <img *ngIf="user?.photoURL" [src]="user?.photoURL" alt="Avatar" />
-            <ion-icon *ngIf="!user?.photoURL" name="person-circle-outline"></ion-icon>
-          </ng-template>
-        </ion-avatar>
-      </div>
-
-      <div class="info">
-        <h2>{{ user?.displayName }}</h2>
-        <p class="muted">{{ user?.email }}</p>
-      </div>
-
-      <div class="actions">
-        <button class="btn btn-outline" (click)="openPwaCameraModal()">Prendre une photo</button>
-        <label class="btn btn-outline file-label">
-          Choisir un fichier
-          <input type="file" accept="image/*" (change)="onFileSelected($event)" />
-        </label>
-      </div>
-
-
-
-      <form [formGroup]="form" class="edit-form">
-        <div class="field">
-          <input id="firstName" placeholder="Prénom" type="text" formControlName="firstName" />
-        </div>
-        <div class="field">
-          <input id="lastName" placeholder="Nom" type="text" formControlName="lastName" />
-        </div>
-
-        <div class="save">
-          <ion-button color="primary" (click)="updateProfilePhoto()" [disabled]="isSaving">
-            {{ isSaving ? 'Sauvegarde...' : 'Enregistrer' }}
-          </ion-button>
-        </div>
-      </form>
-    </div>
+<ion-content class="ion-padding">
+  <div class="ion-text-center ion-margin-vertical">
+    <ion-avatar style="width: 120px; height: 120px; margin: 0 auto;">
+      <img [src]="profileImagePreview || 'assets/default-avatar.png'" alt="Photo de profil" />
+    </ion-avatar>
+    <ion-button fill="clear" (click)="selectImage()" class="ion-margin-top">
+      <ion-icon name="camera" slot="start"></ion-icon>
+      Changer la photo
+    </ion-button>
   </div>
+  @if (userProfile) {
+    <ion-card class="info-card">
+      <ion-list>
+        <ion-item lines="none">
+          <ion-icon slot="start" name="person"></ion-icon>
+          <ion-label>
+            <h3>{{ userProfile.firstName }}</h3>
+            <p class="muted">Prénom</p>
+          </ion-label>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-icon slot="start" name="person"></ion-icon>
+          <ion-label>
+            <h3>{{ userProfile.lastName }}</h3>
+            <p class="muted">Nom</p>
+          </ion-label>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-icon slot="start" name="mail"></ion-icon>
+          <ion-label>
+            <h3>{{ userProfile.email }}</h3>
+            <p class="muted">Email</p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+  </ion-card>
+
+  <ion-card class="password-card">
+      <ion-item button (click)="openChangePassword()">
+        <ion-icon slot="start" name="lock-closed"></ion-icon>
+        <ion-label>
+          <h3>Modifier mot de passe</h3>
+          <p class="muted">Sécurisez votre compte</p>
+        </ion-label>
+        <ion-icon slot="end" name="chevron-forward"></ion-icon>
+      </ion-item>
+    </ion-card>
+  }
 </ion-content>

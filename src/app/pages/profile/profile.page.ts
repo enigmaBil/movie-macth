@@ -1,191 +1,267 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule, NgIf } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonAvatar, IonIcon, IonButton, IonButtons, IonInput, IonItem, IonLabel, IonSpinner, LoadingController, ToastController } from '@ionic/angular/standalone';
-import { Router } from '@angular/router';
-import type { User } from 'firebase/auth';
-import { UserService } from 'src/app/core/services/user.service';
+import { Component, inject, OnInit } from '@angular/core';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { AlertController, ToastController } from '@ionic/angular';
+import { IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonContent, IonIcon, IonCard, IonList, IonItem, IonLabel, IonAvatar, IonCardContent, IonCardTitle, IonCardHeader } from '@ionic/angular/standalone';
+// NgIf and FormsModule not needed for the current template (using Angular 20 @if control flow)
 import { ProfileService } from 'src/app/core/services/profile.service';
+import { Router } from '@angular/router';
+import { Auth, updatePassword } from '@angular/fire/auth';
+import { User } from 'src/app/core/models/user.model';
+import { from } from 'rxjs';
+import { UserService } from 'src/app/core/services/user.service';
 
 @Component({
   selector: 'app-profile',
+  standalone: true,
   templateUrl: './profile.page.html',
   styleUrls: ['./profile.page.scss'],
-  standalone: true,
-  imports: [IonButtons, IonButton, IonIcon, IonAvatar, IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, ReactiveFormsModule,
-    // structural directives
-    NgIf
-  ]
+  imports: [IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonContent, IonAvatar, IonIcon, IonCard, IonList, IonItem, IonLabel]
 })
 export class ProfilePage implements OnInit {
-  user: User | null = null;
-
-  private profileService = inject(ProfileService);
-  private fb = inject(FormBuilder);
-  private loadingCtrl = inject(LoadingController);
-  private toastCtrl = inject(ToastController);
-
-  form = this.fb.group({
-    firstName: ['', Validators.required],
-    lastName: ['', Validators.required]
-  });
-
-  isSaving = false;
+  userProfile: User | null = null;
   profileImagePreview: string | null = null;
-  selectedImageFile: File | null = null;
+  // modal/edit states
+  editingName = false;
+  editingEmail = false;
+  editingPassword = false;
+
+  editFirstName = '';
+  editLastName = '';
+  editEmail = '';
+  editPassword = '';
+  editPasswordConfirm = '';
 
   constructor(
-    private userService: UserService,
-    private router: Router
+    private profileService: ProfileService,
+    private router: Router,
+    private alertController: AlertController,
+    private toastController: ToastController,
+    private auth: Auth,
+    private userService: UserService
   ) {}
 
-  async selectImage() {
-    try {
-      const dataUrl = await this.profileService.takePhotoFallback();
-      if (dataUrl) {
-        this.profileImagePreview = dataUrl;
-        this.selectedImageFile = null;
-      }
-    } catch (e) {
-      console.error('takePhoto failed', e);
-    }
-  }
-
-  async openPwaCameraModal() {
-    try {
-      // create the element dynamically so we don't need CUSTOM_ELEMENTS_SCHEMA in the component metadata
-      const modalEl = document.createElement('pwa-camera-modal') as any;
-
-      const handler = async (ev: any) => {
-        try {
-          const detail = ev?.detail;
-          if (!detail) return;
-
-          let dataUrl: string | null = null;
-          if (typeof detail === 'string') {
-            dataUrl = detail.startsWith('data:') ? detail : null;
-          } else if (detail instanceof Blob) {
-            dataUrl = await this.profileService.fileToDataUrl(new File([detail], 'photo.jpg', { type: detail.type }));
-          } else if (detail && typeof detail === 'object') {
-            if (typeof detail.dataUrl === 'string') dataUrl = detail.dataUrl;
-            else if (typeof detail.base64 === 'string') dataUrl = `data:image/jpeg;base64,${detail.base64}`;
-            else if (detail.blob instanceof Blob) dataUrl = await this.profileService.fileToDataUrl(new File([detail.blob], 'photo.jpg', { type: detail.blob.type }));
-          }
-
-          if (dataUrl) {
-            this.profileImagePreview = dataUrl;
-            this.selectedImageFile = null;
-
-            // Auto-upload after capture
-            await this.performUploadAfterCapture();
-          }
-        } catch (err) {
-          console.error('Error handling photo event', err);
-        } finally {
-          modalEl.removeEventListener('onPhoto', handler);
-          // dismiss and remove the element
-          try { await modalEl.dismiss(); } catch {}
-          if (modalEl.parentNode) modalEl.parentNode.removeChild(modalEl);
-        }
-      };
-
-      modalEl.addEventListener('onPhoto', handler);
-
-      // append to body and present
-      document.body.appendChild(modalEl);
-      if (typeof modalEl.present === 'function') {
-        await modalEl.present();
-      } else {
-        // fallback if present isn't available
-        const dataUrl = await this.profileService.takePhotoFallback();
-        if (dataUrl) {
-          this.profileImagePreview = dataUrl;
-          this.selectedImageFile = null;
-          await this.performUploadAfterCapture();
-        }
-        modalEl.removeEventListener('onPhoto', handler);
-        if (modalEl.parentNode) modalEl.parentNode.removeChild(modalEl);
-      }
-    } catch (e) {
-      console.error('openPwaCameraModal error', e);
-    }
-  }
-
-  private async performUploadAfterCapture() {
-    if (!this.user) return;
-    // show loading
-    const loading = await this.loadingCtrl.create({ message: 'Upload en cours...' });
-    await loading.present();
-    try {
-      await this.updateProfilePhoto();
-      const toast = await this.toastCtrl.create({ message: 'Photo mise à jour', duration: 2000, color: 'success' });
-      await toast.present();
-    } catch (err) {
-      console.error('Auto upload failed', err);
-      const toast = await this.toastCtrl.create({ message: 'Erreur lors de l\'upload', duration: 3000, color: 'danger' });
-      await toast.present();
-    } finally {
-      await loading.dismiss();
-    }
-  }
-
-  private async convertBlobUrlToFile(url: string): Promise<File> {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    return new File([blob], 'profile.jpg', { type: blob.type });
-  }
-
   ngOnInit() {
-    this.userService.user$.subscribe(user => {
-      this.user = user; // ou null si non connecté
-      if (user) {
-        const parts = (user.displayName || '').split(' ');
-        this.form.patchValue({ firstName: parts[0] ?? '', lastName: parts.slice(1).join(' ') ?? '' });
-        this.profileImagePreview = user.photoURL ?? null;
-      }
+    this.loadUserProfile();
+  }
+
+  private loadUserProfile() {
+    this.profileService.getCurrentUserProfile().subscribe(profile => {
+      this.userProfile = profile;
+      console.log(profile);
+      
+      this.profileImagePreview = profile?.photoDataUrl || null;
     });
   }
 
-  async logout() {
-    await this.userService.logout();
-    await this.router.navigate(['/login']);
-  }
-
-  async updateProfilePhoto() {
-    if (!this.user) return;
-    this.isSaving = true;
+  async selectImage() {
     try {
-      let dataUrl: string | null = null;
-      if (this.selectedImageFile) {
-        dataUrl = await this.profileService.fileToDataUrl(this.selectedImageFile);
-      } else if (this.profileImagePreview) {
-        dataUrl = this.profileImagePreview;
+      const image = await Camera.getPhoto({
+        quality: 60, // Réduit la taille
+        allowEditing: true,
+        width: 300,
+        height: 300,
+        resultType: CameraResultType.DataUrl, // ← Important
+        source: CameraSource.Prompt
+      });
+
+      if (image.dataUrl) {
+        this.profileImagePreview = image.dataUrl;
+        await this.savePhoto(image.dataUrl);
       }
-
-      let downloadUrl: string | undefined;
-      if (dataUrl) {
-        downloadUrl = await this.profileService.uploadProfilePhoto(this.user.uid, dataUrl);
-      }
-
-      const updates: any = {};
-      if (this.form.value.firstName) updates.firstName = this.form.value.firstName;
-      if (this.form.value.lastName) updates.lastName = this.form.value.lastName;
-      if (downloadUrl) updates.photoURL = downloadUrl;
-
-      await this.profileService.updateProfileData(this.user.uid, updates);
-    } catch (e) {
-      console.error('updateProfilePhoto error', e);
-    } finally {
-      this.isSaving = false;
+    } catch (error) {
+      console.log('Sélection annulée ou erreur', error);
     }
   }
 
-  // file input handler
-  async onFileSelected(ev: Event) {
-    const input = ev.target as HTMLInputElement;
+  // file input fallback
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
-    this.selectedImageFile = input.files[0];
-    this.profileImagePreview = await this.profileService.fileToDataUrl(this.selectedImageFile);
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const dataUrl = reader.result as string;
+      this.profileImagePreview = dataUrl;
+      await this.savePhoto(dataUrl);
+    };
+    reader.readAsDataURL(file);
   }
 
+  // Name edit flow
+  openEditName() {
+    this.editFirstName = this.userProfile?.firstName || '';
+    this.editLastName = this.userProfile?.lastName || '';
+    this.editingName = true;
+  }
+  closeEditName() { this.editingName = false; }
+  async submitEditName() {
+    if (!this.editFirstName || !this.editLastName) {
+      this.presentToast('Le prénom et le nom sont requis', 'danger');
+      return;
+    }
+    try {
+      await this.profileService.updateBasicInfo(this.editFirstName, this.editLastName, this.userProfile?.age || 0);
+      this.presentToast('Nom mis à jour', 'success');
+      this.loadUserProfile();
+      this.closeEditName();
+    } catch (e: any) {
+      this.presentToast(e.message || 'Erreur', 'danger');
+    }
+  }
+
+  // Email edit flow
+  openEditEmail() {
+    this.editEmail = this.userProfile?.email || '';
+    this.editingEmail = true;
+  }
+  closeEditEmail() { this.editingEmail = false; }
+  async submitEditEmail() {
+    if (!this.editEmail) { this.presentToast('Email requis', 'danger'); return; }
+    try {
+      await this.profileService.updateEmail(this.editEmail);
+      this.presentToast('Email mis à jour', 'success');
+      this.loadUserProfile();
+      this.closeEditEmail();
+    } catch (e: any) {
+      this.presentToast(e.message || 'Erreur lors de la mise à jour de l\'email', 'danger');
+    }
+  }
+
+  // Password change flow
+  openChangePassword() { this.editPassword = ''; this.editPasswordConfirm = ''; this.editingPassword = true; }
+  closeChangePassword() { this.editingPassword = false; }
+  async submitChangePassword() {
+    if (!this.editPassword || this.editPassword.length < 6) { this.presentToast('Le mot de passe doit contenir au moins 6 caractères', 'danger'); return; }
+    if (this.editPassword !== this.editPasswordConfirm) { this.presentToast('Les mots de passe ne correspondent pas', 'danger'); return; }
+    try {
+      await this.profileService.updatePassword(this.editPassword);
+      this.presentToast('Mot de passe mis à jour', 'success');
+      this.closeChangePassword();
+    } catch (e: any) {
+      this.presentToast(e.message || 'Erreur lors de la mise à jour du mot de passe', 'danger');
+    }
+  }
+
+  onModalDismiss() {
+    // no-op for now; placeholder if we want to react
+  }
+
+  private async savePhoto(dataUrl: string) {
+    if (!this.userProfile) return;
+
+    const loading = await this.toastController.create({ message: 'Sauvegarde...', duration: 2000 });
+    await loading.present();
+
+    try {
+      await this.profileService.updateProfilePhoto(this.userProfile.id, dataUrl);
+      this.presentToast('Photo mise à jour !', 'success');
+    } catch (err: any) {
+      this.presentToast(err.message || 'Erreur lors de la sauvegarde.', 'danger');
+    } finally {
+      loading.dismiss();
+    }
+  }
+
+  async updateBasicInfo() {
+    const alert = await this.alertController.create({
+      header: 'Modifier vos informations',
+      inputs: [
+        { name: 'firstName', type: 'text', placeholder: 'Prénom', value: this.userProfile?.firstName },
+        { name: 'lastName', type: 'text', placeholder: 'Nom', value: this.userProfile?.lastName },
+        { name: 'age', type: 'number', placeholder: 'Âge', value: this.userProfile?.age?.toString() }
+      ],
+      buttons: [
+        { text: 'Annuler', role: 'cancel' },
+        {
+          text: 'Sauvegarder',
+          handler: async (data: any) => {
+            try {
+              await this.profileService.updateBasicInfo(data.firstName, data.lastName, +data.age);
+              this.loadUserProfile();
+              this.presentToast('Informations mises à jour !');
+            } catch (err) {
+              this.presentToast('Erreur lors de la mise à jour.', 'danger');
+            }
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+    async changePassword() {
+    const alert = await this.alertController.create({
+      header: 'Changer le mot de passe',
+      message: 'Entrez votre nouveau mot de passe (au moins 6 caractères).',
+      inputs: [
+        {
+          name: 'currentPassword',
+          type: 'password',
+          placeholder: 'Mot de passe actuel (optionnel si récemment connecté)',
+          // Note : Firebase ne demande pas le mot de passe actuel si la session est récente
+        },
+        {
+          name: 'newPassword',
+          type: 'password',
+          placeholder: 'Nouveau mot de passe',
+          min: 6
+        },
+        {
+          name: 'confirmPassword',
+          type: 'password',
+          placeholder: 'Confirmer le nouveau mot de passe'
+        }
+      ],
+      buttons: [
+        {
+          text: 'Annuler',
+          role: 'cancel'
+        },
+        {
+          text: 'Mettre à jour',
+          handler: async (data) => {
+            if (!data.newPassword || data.newPassword.length < 6) {
+              this.presentToast('Le mot de passe doit avoir au moins 6 caractères.', 'danger');
+              return false; // empêche la fermeture de l'alerte
+            }
+
+            if (data.newPassword !== data.confirmPassword) {
+              this.presentToast('Les mots de passe ne correspondent pas.', 'danger');
+              return false;
+            }
+
+            try {
+              const user = this.userService['auth'].currentUser;
+              if (!user) throw new Error('Utilisateur non connecté');
+
+              await updatePassword(user, data.newPassword);
+
+              this.presentToast('Mot de passe mis à jour avec succès !', 'success');
+              return true;
+            } catch (error: any) {
+              console.error('Erreur changement mot de passe:', error);
+              let message = 'Impossible de changer le mot de passe.';
+              if (error.code === 'auth/requires-recent-login') {
+                message = 'Veuillez vous reconnecter pour changer votre mot de passe.';
+              }
+              this.presentToast(message, 'danger');
+              return false;
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  async logout() {
+    await this.auth.signOut();
+    this.router.navigate(['/login']);
+  }
+
+  private async presentToast(message: string, color: 'success' | 'danger' = 'success') {
+    const toast = await this.toastController.create({ message, color, duration: 2000 });
+    toast.present();
+  }
 }

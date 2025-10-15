@@ -1,11 +1,10 @@
-import { Injectable, NgZone, inject, Injector, runInInjectionContext } from "@angular/core";
-import { Auth, signInWithEmailAndPassword, signOut, authState, createUserWithEmailAndPassword, updateProfile } from '@angular/fire/auth';
-import type { User } from 'firebase/auth';
+import { Injectable } from '@angular/core';
+import { Auth, signInWithEmailAndPassword, signOut, User, authState, createUserWithEmailAndPassword, updateProfile } from '@angular/fire/auth';
+import { inject } from '@angular/core';
+import { doc, Firestore, setDoc, updateDoc, getDoc } from '@angular/fire/firestore';
+import { docData } from '@angular/fire/firestore';
+import { RegisterData } from '../models/user.model';
 import { Observable } from 'rxjs';
-import { doc, Firestore, setDoc, docData } from "@angular/fire/firestore";
-import { Storage, ref, uploadString, getDownloadURL } from '@angular/fire/storage';
-import { getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
-import { RegisterData } from "../models/user.model";
 
 @Injectable({
   providedIn: 'root'
@@ -13,114 +12,84 @@ import { RegisterData } from "../models/user.model";
 export class UserService {
   private auth = inject(Auth);
   private firestore = inject(Firestore);
-  private storage = inject(Storage);
-  private injector = inject(Injector);
-  private zone = inject(NgZone);
 
-  user$!: Observable<User | null>;
-
-  constructor() {
-    this.user$ = authState(this.auth);
-  }
-
-  async login(email: string, password: string) {
-    return this.zone.runOutsideAngular(async () => {
-      const cred = await signInWithEmailAndPassword(this.auth, email, password);
-      return cred.user;
-    });
-  }
+  user$: Observable<User | null> = authState(this.auth);
 
   async register(data: RegisterData) {
-    return this.zone.runOutsideAngular(async () => {
-      const cred = await createUserWithEmailAndPassword(this.auth, data.email, data.password);
+    const cred = await createUserWithEmailAndPassword(this.auth, data.email, data.password);
 
-      await updateProfile(cred.user, {
-        displayName: `${data.firstName} ${data.lastName}`,
-      });
-
-      const userDoc = doc(this.firestore, 'users', cred.user.uid);
-      const payload: any = {
-        id: cred.user.uid,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        age: data.age,
-        email: data.email,
-        role: 'user',
-        isActive: true,
-        favoriteMovieIds: [],
-        photoBase64: null,
-        createdAt: new Date(),
-      };
-
-      if (data.photoDataUrl) {
-        try {
-          const downloadUrl = await this.uploadProfilePhoto(cred.user.uid, data.photoDataUrl);
-          payload.photoBase64 = data.photoDataUrl;
-          payload.photoURL = downloadUrl;
-          await updateProfile(cred.user, { photoURL: downloadUrl });
-        } catch (e) {
-          console.warn('Photo upload failed', e);
-        }
-      }
-
-      await setDoc(userDoc, payload);
-      console.log('User document created in Firestore with payload:', payload);
-      return cred.user;
+    await updateProfile(cred.user, {
+      displayName: `${data.firstName} ${data.lastName}`
     });
+
+    const userDoc = doc(this.firestore, 'users', cred.user.uid);
+
+    const payload: any = {
+      id: cred.user.uid,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      age: data.age,
+      email: data.email,
+      role: 'user',
+      isActive: true,
+      favoriteMovieIds: [],
+      photoDataUrl: null,
+      createdAt: new Date()
+    };
+
+    if (data.photoDataUrl) {
+      // Store the base64/data URL in Firestore and set the auth photoURL to the same data URL
+      payload.photoDataUrl = data.photoDataUrl;
+      payload.photoURL = data.photoDataUrl;
+      try {
+        await updateProfile(cred.user, { photoURL: data.photoDataUrl });
+      } catch (e) {
+        console.warn('Could not set auth photoURL during registration', e);
+      }
+    }
+
+    await setDoc(userDoc, payload);
+
+    return cred.user;
   }
 
-  async logout() {
-    return this.zone.runOutsideAngular(() => signOut(this.auth));
+  // Real-time observable for user document (includes favorites)
+  favorites$(uid: string) {
+    const userRef = doc(this.firestore, 'users', uid);
+    return docData(userRef) as any;
   }
 
+  // Toggle a movie id in the user's favoriteMovieIds array
   async toggleFavorite(uid: string, movieId: string) {
-    return this.zone.runOutsideAngular(async () => {
-      const userRef = doc(this.firestore, 'users', uid);
-      const snapshot = await getDoc(userRef as any);
-      if (!snapshot.exists()) {
-        await setDoc(userRef, { favoriteMovieIds: [movieId] }, { merge: true } as any);
-        return true;
-      }
-
-      const data: any = snapshot.data();
-      const current: string[] = data.favoriteMovieIds || [];
-      const isFav = current.includes(movieId);
-
-      if (isFav) {
-        await updateDoc(userRef as any, { favoriteMovieIds: arrayRemove(movieId) });
-        return false;
-      } else {
-        await updateDoc(userRef as any, { favoriteMovieIds: arrayUnion(movieId) });
-        return true;
-      }
-    });
+    const userRef = doc(this.firestore, 'users', uid);
+    const snap = await getDoc(userRef as any);
+    if (!snap.exists()) {
+      // create doc with favoriteMovieIds
+      await setDoc(userRef, { favoriteMovieIds: [movieId] }, { merge: true });
+      return true;
+    }
+    const data: any = snap.data();
+    const favs: string[] = data.favoriteMovieIds || [];
+    const has = favs.includes(movieId);
+    const newFavs = has ? favs.filter(id => id !== movieId) : [...favs, movieId];
+    await updateDoc(userRef as any, { favoriteMovieIds: newFavs });
+    return !has;
   }
 
   async getUserFavorites(uid: string) {
-    return this.zone.runOutsideAngular(async () => {
-      const userRef = doc(this.firestore, 'users', uid);
-      const snap = await getDoc(userRef as any);
-      if (!snap.exists()) return [];
-      const data: any = snap.data();
-      return data.favoriteMovieIds || [];
-    });
-  }
-
-  // Real-time observable of favorite IDs
-  favorites$(uid: string) {
     const userRef = doc(this.firestore, 'users', uid);
-    // Ensure AngularFire's docData is executed inside an Angular injection context
-    return runInInjectionContext(this.injector, () =>
-      docData(userRef as any) as Observable<{ favoriteMovieIds?: string[] } | undefined>
-    );
+    const snap = await getDoc(userRef as any);
+    if (!snap.exists()) return [] as string[];
+    const data: any = snap.data();
+    return data.favoriteMovieIds || [];
   }
 
-  async uploadProfilePhoto(uid: string, dataUrl: string) {
-    return this.zone.runOutsideAngular(async () => {
-      const storageRef = ref(this.storage, `profilePhotos/${uid}.jpg`);
-      await uploadString(storageRef, dataUrl, 'data_url');
-      const downloadUrl = await getDownloadURL(storageRef);
-      return downloadUrl;
-    });
+  async login(email: string, password: string) {
+    const cred = await signInWithEmailAndPassword(this.auth, email, password);
+    return cred.user;
+  }
+
+  async logout() {
+    return signOut(this.auth);
   }
 }
