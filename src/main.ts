@@ -14,6 +14,21 @@ addIcons({ person });
 addIcons({ personCircleOutline });
 addIcons({ logOutOutline });
 
+// Register Ionic PWA Elements (web components) if available.
+// This improves the camera/file input UI when running as a PWA in the browser.
+// dynamic import so this only runs if the package is installed
+import('@ionic/pwa-elements/loader')
+  .then((loader) => {
+    if (loader && typeof loader.defineCustomElements === 'function') {
+      // define the custom elements on the window
+      return loader.defineCustomElements(window as any);
+    }
+    return Promise.resolve();
+  })
+  .catch(() => {
+    // ignore if the package isn't installed or import fails
+  });
+
 bootstrapApplication(AppComponent, {
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },

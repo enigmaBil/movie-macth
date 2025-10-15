@@ -1,12 +1,23 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="primary">
-    <ion-title>Movie-Match</ion-title>
+    <ion-title>Favoris</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <div class="ion-padding">
-    <h2>Vos films favoris</h2>
-    <p>Aucun film favori pour le moment.</p>
+<ion-content class="ion-padding">
+  <div *ngIf="isLoading">Chargement...</div>
+
+  <div *ngIf="!isLoading && movies.length === 0">Aucun favori pour l'instant.</div>
+
+  <div class="grid" *ngIf="!isLoading && movies.length > 0">
+    <div class="movie-card" *ngFor="let movie of movies">
+      <div class="poster-wrap">
+        <img [src]="movie.poster_path ? ('https://image.tmdb.org/t/p/w342' + movie.poster_path) : '/assets/icon/favicon.png'" [alt]="movie.title" />
+      </div>
+      <div class="movie-info">
+        <h3>{{ movie.title }}</h3>
+        <ion-button fill="clear" (click)="removeFavorite(movie.id)">Retirer</ion-button>
+      </div>
+    </div>
   </div>
 </ion-content>

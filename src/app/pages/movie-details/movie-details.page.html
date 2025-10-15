@@ -1,0 +1,21 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>{{ movie?.title || 'Détail' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div *ngIf="isLoading">Chargement...</div>
+
+  <div *ngIf="!isLoading && movie" class="details-container">
+    <div class="poster-top">
+      <img [src]="posterUrl(movie.poster_path)" [alt]="movie.title" />
+    </div>
+
+    <div class="info-block">
+      <h2 class="title">{{ movie.title }}</h2>
+      <p class="release"><strong>Sortie :</strong> {{ movie.release_date }}</p>
+      <p class="overview">{{ movie.overview }}</p>
+    </div>
+  </div>
+  </ion-content>

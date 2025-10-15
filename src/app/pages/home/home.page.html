@@ -5,9 +5,31 @@
 </ion-header>
 
 <ion-content>
-  <!-- Contenu de la page d'accueil (liste de films, etc.) -->
-  <div class="ion-padding">
+  <div class="home-hero ion-padding">
     <h1>Bienvenue sur Movie-Match !</h1>
     <p>Découvrez des films recommandés rien que pour vous.</p>
+  </div>
+
+  <div class="movie-grid">
+    <div *ngIf="isLoading" class="loading-wrap">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+
+    <div class="grid" *ngIf="!isLoading">
+      <div class="movie-card" *ngFor="let movie of movies">
+  <a [routerLink]="['/tabs/movie', movie.id]" class="movie-link">
+          <div class="poster-wrap">
+            <img [src]="posterUrl(movie.poster_path) || '/assets/icon/favicon.png'" [alt]="movie.title" />
+          </div>
+          <div class="movie-info">
+            <h3>{{ movie.title }}</h3>
+          </div>
+        </a>
+        <ion-button class="fav-btn" fill="clear" size="small" (click)="toggleFavorite(movie); $event.stopPropagation(); $event.preventDefault();">
+          <span *ngIf="isFavorite(movie)">♥</span>
+          <span *ngIf="!isFavorite(movie)">♡</span>
+        </ion-button>
+      </div>
+    </div>
   </div>
 </ion-content>

@@ -1,0 +1,7 @@
+[
+  {
+    "origin": ["http://localhost:4200", "http://localhost:8100", "https://movie-match-app.netlify.app", "https://movie-match.firebaseapp.com"],
+    "method": ["GET", "POST", "PUT", "DELETE"],
+    "maxAgeSeconds": 3600
+  }
+]

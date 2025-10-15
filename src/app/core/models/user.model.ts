@@ -16,4 +16,5 @@ export interface RegisterData {
   age: number;
   email: string;
   password: string;
+  photoDataUrl?: string;
 }

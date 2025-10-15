@@ -1,3 +1,64 @@
+/* Home page movie grid styles */
+.home-hero {
+  text-align: center;
+  color: var(--ion-color-dark);
+}
+
+.movie-grid {
+  padding: 1rem;
+}
+
+.loading-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.movie-card {
+  background: var(--ion-color-light);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.poster-wrap img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.movie-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem;
+}
+
+.fav-btn {
+  color: var(--ion-color-primary);
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 18px;
+  }
+}
+
 #container {
   text-align: center;
 

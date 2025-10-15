@@ -17,10 +17,8 @@ export function getAuthErrorMessage(errorCode: string): string {
     case 'auth/invalid-email':
       return 'Adresse email invalide.';
     
-    case 'auth/email-already-in-use':
-        return 'Cet email est déjà utilisé.';
-    case 'auth/invalid-email':
-        return 'Adresse email invalide.';
+  case 'auth/email-already-in-use':
+    return 'Cet email est déjà utilisé.';
     case 'auth/weak-password':
         return 'Le mot de passe est trop faible.';
     case 'auth/operation-not-allowed':

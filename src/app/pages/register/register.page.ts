@@ -25,6 +25,8 @@ export class RegisterPage implements OnInit {
 
   isSubmitting = false;
   authError: string | null = null;
+  photoPreview: string | null = null;
+  photoDataUrl: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -58,7 +60,8 @@ export class RegisterPage implements OnInit {
         lastName: lastName!,
         age: +age!,
         email: email!,
-        password: password!
+        password: password!,
+        photoDataUrl: this.photoDataUrl ?? undefined
       });
       await this.router.navigate(['/login']);
     } catch (err: any) {
@@ -67,6 +70,19 @@ export class RegisterPage implements OnInit {
     } finally {
       this.isSubmitting = false;
     }
+  }
+
+  onPhotoSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      this.photoPreview = result;
+      this.photoDataUrl = result;
+    };
+    reader.readAsDataURL(file);
   }
 
 }

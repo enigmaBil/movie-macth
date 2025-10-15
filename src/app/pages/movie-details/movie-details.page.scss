@@ -1,0 +1,7 @@
+.details-container{display:flex;flex-direction:column;align-items:center}
+.poster-top img{width:100%;max-width:600px;border-radius:8px;object-fit:cover}
+.info-block{padding:16px;width:100%;max-width:900px}
+.title{font-size:1.6rem;margin:8px 0}
+.release{color:#666;margin-bottom:12px}
+.overview{line-height:1.5}
+ion-footer{position:fixed;left:0;right:0;bottom:0}

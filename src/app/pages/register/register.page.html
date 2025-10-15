@@ -9,11 +9,11 @@
         </h2>
 
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="ion-padding-horizontal">
-          @if (authError) {
+          <ng-container *ngIf="authError">
             <ion-text color="danger" class="ion-margin-bottom ion-padding-horizontal">
               {{ authError }}
             </ion-text>
-          }
+          </ng-container>
 
           <!-- Prénom -->
           <ion-item lines="full" class="ion-margin-vertical">
@@ -23,11 +23,11 @@
               aria-label="Prénom"
             ></ion-input>
           </ion-item>
-          @if (firstName.touched && firstName.invalid) {
+          <ng-container *ngIf="firstName.touched && firstName.invalid">
             <ion-text color="danger" class="ion-margin-bottom ion-padding-start">
               <small>Le prénom est requis.</small>
             </ion-text>
-          }
+          </ng-container>
 
           <!-- Nom -->
           <ion-item lines="full" class="ion-margin-vertical">
@@ -37,11 +37,11 @@
               aria-label="Nom"
             ></ion-input>
           </ion-item>
-          @if (lastName.touched && lastName.invalid) {
+          <ng-container *ngIf="lastName.touched && lastName.invalid">
             <ion-text color="danger" class="ion-margin-bottom ion-padding-start">
               <small>Le nom est requis.</small>
             </ion-text>
-          }
+          </ng-container>
 
           <!-- Âge -->
           <ion-item lines="full" class="ion-margin-vertical">
@@ -53,15 +53,16 @@
               aria-label="Âge"
             ></ion-input>
           </ion-item>
-          @if (age.touched && age.invalid) {
+          <ng-container *ngIf="age.touched && age.invalid">
             <ion-text color="danger" class="ion-margin-bottom ion-padding-start">
-              @if (age.errors?.['required']) {
+              <ng-container *ngIf="age.errors?.['required']; else ageRange">
                 <small>L'âge est requis.</small>
-              } @else if (age.errors?.['min'] || age.errors?.['max']) {
+              </ng-container>
+              <ng-template #ageRange>
                 <small>L'âge doit être entre 13 et 120 ans.</small>
-              }
+              </ng-template>
             </ion-text>
-          }
+          </ng-container>
 
           <!-- Email -->
           <ion-item lines="full" class="ion-margin-vertical">
@@ -73,15 +74,16 @@
               aria-label="Adresse email"
             ></ion-input>
           </ion-item>
-          @if (email.touched && email.invalid) {
+          <ng-container *ngIf="email.touched && email.invalid">
             <ion-text color="danger" class="ion-margin-bottom ion-padding-start">
-              @if (email.errors?.['required']) {
+              <ng-container *ngIf="email.errors?.['required']; else regEmailFormat">
                 <small>L'email est requis.</small>
-              } @else if (email.errors?.['email']) {
+              </ng-container>
+              <ng-template #regEmailFormat>
                 <small>Format d'email invalide.</small>
-              }
+              </ng-template>
             </ion-text>
-          }
+          </ng-container>
 
           <!-- Mot de passe -->
           <ion-item lines="full" class="ion-margin-vertical">
@@ -92,15 +94,16 @@
               aria-label="Mot de passe"
             ></ion-input>
           </ion-item>
-          @if (password.touched && password.invalid) {
+          <ng-container *ngIf="password.touched && password.invalid">
             <ion-text color="danger" class="ion-margin-bottom ion-padding-start">
-              @if (password.errors?.['required']) {
+              <ng-container *ngIf="password.errors?.['required']; else regPwdMin">
                 <small>Le mot de passe est requis.</small>
-              } @else if (password.errors?.['minlength']) {
+              </ng-container>
+              <ng-template #regPwdMin>
                 <small>6 caractères minimum.</small>
-              }
+              </ng-template>
             </ion-text>
-          }
+          </ng-container>
 
           <ion-button
             expand="block"
@@ -111,6 +114,14 @@
             S'inscrire
           </ion-button>
         </form>
+
+        <div class="photo-uploader ion-padding-horizontal ion-margin-top">
+          <label for="photoInput">Photo de profil (facultatif)</label>
+          <input id="photoInput" type="file" accept="image/*" (change)="onPhotoSelected($event)" />
+          <div *ngIf="photoPreview" class="photo-preview ion-margin-top">
+            <img [src]="photoPreview" alt="Aperçu photo" />
+          </div>
+        </div>
 
         <div class="ion-text-center ion-padding-horizontal ion-margin-bottom">
           <p>

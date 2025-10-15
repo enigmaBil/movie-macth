@@ -11,11 +11,11 @@
         </h2>
 
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="ion-padding-horizontal">
-          @if (authError) {
+          <ng-container *ngIf="authError">
             <ion-text color="danger" class="ion-margin-bottom ion-padding-horizontal">
               {{ authError }}
             </ion-text>
-          }
+          </ng-container>
 
           <!-- Champ Email -->
           <ion-item lines="full" class="ion-margin-vertical">
@@ -28,15 +28,16 @@
             ></ion-input>
           </ion-item>
 
-          @if (email.touched && email.invalid) {
+          <ng-container *ngIf="email.touched && email.invalid">
             <ion-text color="danger" class="ion-margin-bottom ion-padding-start">
-              @if (email.errors?.['required']) {
+              <ng-container *ngIf="email.errors?.['required']; else emailFormat">
                 <small>L'email est requis.</small>
-              } @else if (email.errors?.['email']) {
+              </ng-container>
+              <ng-template #emailFormat>
                 <small>Format d'email invalide.</small>
-              }
+              </ng-template>
             </ion-text>
-          }
+          </ng-container>
 
           <!-- Champ Mot de passe -->
           <ion-item lines="full" class="ion-margin-vertical">
@@ -48,15 +49,16 @@
             ></ion-input>
           </ion-item>
 
-          @if (password.touched && password.invalid) {
+          <ng-container *ngIf="password.touched && password.invalid">
             <ion-text color="danger" class="ion-margin-bottom ion-padding-start">
-              @if (password.errors?.['required']) {
+              <ng-container *ngIf="password.errors?.['required']; else pwdMinLength">
                 <small>Le mot de passe est requis.</small>
-              } @else if (password.errors?.['minlength']) {
+              </ng-container>
+              <ng-template #pwdMinLength>
                 <small>Le mot de passe doit contenir au moins 6 caractères.</small>
-              }
+              </ng-template>
             </ion-text>
-          }
+          </ng-container>
 
           <!-- Bouton de soumission -->
           <ion-button
