@@ -1,8 +1,8 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { AlertController, ToastController } from '@ionic/angular';
-import { IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonContent, IonIcon, IonCard, IonList, IonItem, IonLabel, IonAvatar, IonCardContent, IonCardTitle, IonCardHeader } from '@ionic/angular/standalone';
-// NgIf and FormsModule not needed for the current template (using Angular 20 @if control flow)
+import { IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonContent, IonIcon, IonCard, IonList, IonItem, IonLabel, IonAvatar, IonInput, IonModal } from '@ionic/angular/standalone';
+import { FormsModule } from '@angular/forms';
 import { ProfileService } from 'src/app/core/services/profile.service';
 import { Router } from '@angular/router';
 import { Auth, updatePassword } from '@angular/fire/auth';
@@ -15,7 +15,7 @@ import { UserService } from 'src/app/core/services/user.service';
   standalone: true,
   templateUrl: './profile.page.html',
   styleUrls: ['./profile.page.scss'],
-  imports: [IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonContent, IonAvatar, IonIcon, IonCard, IonList, IonItem, IonLabel]
+  imports: [FormsModule, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonContent, IonAvatar, IonIcon, IonCard, IonList, IonItem, IonLabel, IonInput, IonModal]
 })
 export class ProfilePage implements OnInit {
   userProfile: User | null = null;
@@ -30,6 +30,7 @@ export class ProfilePage implements OnInit {
   editEmail = '';
   editPassword = '';
   editPasswordConfirm = '';
+  editAge: any;
 
   constructor(
     private profileService: ProfileService,
@@ -95,13 +96,13 @@ export class ProfilePage implements OnInit {
   }
   closeEditName() { this.editingName = false; }
   async submitEditName() {
-    if (!this.editFirstName || !this.editLastName) {
-      this.presentToast('Le prénom et le nom sont requis', 'danger');
+    if (!this.editFirstName || !this.editLastName || !this.editAge) {
+      this.presentToast('Le prénom, le nom et l\'age sont requis', 'danger');
       return;
     }
     try {
-      await this.profileService.updateBasicInfo(this.editFirstName, this.editLastName, this.userProfile?.age || 0);
-      this.presentToast('Nom mis à jour', 'success');
+      await this.profileService.updateBasicInfo(this.editFirstName, this.editLastName, this.editAge || 0);
+      this.presentToast('Information mis à jour', 'success');
       this.loadUserProfile();
       this.closeEditName();
     } catch (e: any) {

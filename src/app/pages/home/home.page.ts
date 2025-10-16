@@ -6,7 +6,7 @@ import { MovieService, TmdbMovie } from 'src/app/core/services/movie.service';
 import { UserService } from 'src/app/core/services/user.service';
 import { firstValueFrom } from 'rxjs';
 import { Subscription } from 'rxjs';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonSpinner } from '@ionic/angular/standalone';
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonSpinner, IonIcon } from '@ionic/angular/standalone';
 import { NgIf, NgForOf } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
@@ -15,7 +15,7 @@ import { RouterLink } from '@angular/router';
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
   standalone: true,
-  imports: [NgIf, NgForOf, RouterLink, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonSpinner]
+  imports: [IonIcon, NgIf, NgForOf, RouterLink, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonSpinner]
 })
 export class HomePage implements OnInit {
   private auth = inject(Auth);

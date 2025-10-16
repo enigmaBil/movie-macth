@@ -5,19 +5,37 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <div *ngIf="isLoading">Chargement...</div>
+  @if (isLoading) {
+    <div>Chargement...</div>
+  }
 
-  <div *ngIf="!isLoading && movies.length === 0">Aucun favori pour l'instant.</div>
+  @if (!isLoading && movies.length === 0) {
+    <div>Aucun favori pour l'instant.</div>
+  }
 
-  <div class="grid" *ngIf="!isLoading && movies.length > 0">
-    <div class="movie-card" *ngFor="let movie of movies">
-      <div class="poster-wrap">
-        <img [src]="movie.poster_path ? ('https://image.tmdb.org/t/p/w342' + movie.poster_path) : '/assets/icon/favicon.png'" [alt]="movie.title" />
-      </div>
-      <div class="movie-info">
-        <h3>{{ movie.title }}</h3>
-        <ion-button fill="clear" (click)="removeFavorite(movie.id)">Retirer</ion-button>
-      </div>
+  @if (!isLoading && movies.length > 0) {
+    <div class="favorites-container">
+    <ion-grid>
+      <ion-row class="ion-justify-content-center">
+        @for (movie of movies; track movie.id) {
+          <ion-col size-xs="12" size-sm="8" size-md="6">
+          <ion-card class="movie-card">
+            <img class="card-poster" [src]="movie.poster_path ? ('https://image.tmdb.org/t/p/w342' + movie.poster_path) : '/assets/icon/favicon.png'" [alt]="movie.title" />
+            <ion-card-header>
+              <ion-card-title style="font-size: 1rem;">{{ movie.title }}</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="actions">
+                <ion-button shape="round" color="danger" (click)="removeFavorite(movie.id)">
+                  <ion-icon slot="icon-only" class="xl " name="heart-dislike-circle-outline"></ion-icon>
+                </ion-button>
+              </div>
+            </ion-card-content>
+          </ion-card>
+          </ion-col>
+        }
+      </ion-row>
+    </ion-grid>
     </div>
-  </div>
+  }
 </ion-content>

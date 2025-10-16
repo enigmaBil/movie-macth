@@ -1,0 +1,38 @@
+/* Favorites page styles */
+.favorites-container {
+	display: flex;
+	justify-content: center;
+}
+
+.movie-card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.card-poster {
+	width: 100%;
+	height: auto;
+	max-height: 420px; /* larger poster */
+	object-fit: cover;
+	border-radius: 8px 8px 0 0;
+}
+
+.movie-card ion-card-content .actions {
+	display: flex;
+	justify-content: center;
+}
+
+/* enlarge the rounded button and icon inside */
+ion-button[shape="round"][color="danger"] {
+	--padding-top: 8px;
+	--padding-bottom: 8px;
+	--padding-start: 18px;
+	--padding-end: 18px;
+	font-size: 16px;
+}
+
+ion-button[shape="round"][color="danger"] ion-icon {
+	font-size: 20px; /* increase icon size if present */
+}
+

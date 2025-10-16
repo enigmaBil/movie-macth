@@ -115,14 +115,6 @@
           </ion-button>
         </form>
 
-        <div class="photo-uploader ion-padding-horizontal ion-margin-top">
-          <label for="photoInput">Photo de profil (facultatif)</label>
-          <input id="photoInput" type="file" accept="image/*" (change)="onPhotoSelected($event)" />
-          <div *ngIf="photoPreview" class="photo-preview ion-margin-top">
-            <img [src]="photoPreview" alt="Aperçu photo" />
-          </div>
-        </div>
-
         <div class="ion-text-center ion-padding-horizontal ion-margin-bottom">
           <p>
             Déjà un compte ?&nbsp;

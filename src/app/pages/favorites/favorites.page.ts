@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonGrid, IonRow, IonCol, IonButton } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonGrid, IonRow, IonCol, IonButton, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonIcon } from '@ionic/angular/standalone';
 import { Auth } from '@angular/fire/auth';
 import { UserService } from 'src/app/core/services/user.service';
 import { MovieService, TmdbMovie } from 'src/app/core/services/movie.service';
@@ -12,7 +12,7 @@ import { Subscription } from 'rxjs';
   templateUrl: './favorites.page.html',
   styleUrls: ['./favorites.page.scss'],
   standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, IonButton, CommonModule]
+  imports: [IonIcon, IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonGrid, IonRow, IonCol, IonCard, IonCardHeader, IonCardTitle, IonCardContent, CommonModule]
 })
 export class FavoritesPage implements OnInit {
   private auth = inject(Auth);
