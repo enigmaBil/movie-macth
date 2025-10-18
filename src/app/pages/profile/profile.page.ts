@@ -67,6 +67,8 @@ export class ProfilePage implements OnInit {
 
       if (image.dataUrl) {
         this.profileImagePreview = image.dataUrl;
+        console.log(this.profileImagePreview);
+        
         await this.savePhoto(image.dataUrl);
       }
     } catch (error) {
