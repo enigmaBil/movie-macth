@@ -1,0 +1,25 @@
+<ion-content class="ion-padding">
+  <ion-list>
+    <ion-list-header>
+      <ion-label>Ajouter un film</ion-label>
+    </ion-list-header>
+
+    <ion-item>
+      <ion-input label="Titre" labelPlacement="stacked" [(ngModel)]="newMovie.title"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-textarea label="Description" labelPlacement="stacked" [(ngModel)]="newMovie.overview"></ion-textarea>
+    </ion-item>
+
+    <ion-item>
+      <ion-input type="date" label="Date de sortie" labelPlacement="stacked" [(ngModel)]="newMovie.releaseDate"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-input label="Poster URL" labelPlacement="stacked" [(ngModel)]="newMovie.posterPath"></ion-input>
+    </ion-item>
+
+    <ion-button expand="block" (click)="addMovie()" class="ion-margin">Ajouter</ion-button>
+  </ion-list>
+</ion-content>

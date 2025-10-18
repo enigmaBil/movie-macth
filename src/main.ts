@@ -6,7 +6,7 @@ import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
 import { appConfig } from './app/app.config';
 import { addIcons } from 'ionicons';
-import { camera, cameraOutline, chevronForward, heart, heartCircle, heartDislike, heartDislikeCircleOutline, heartOutline, home, lockClosed, logOutOutline, mail, person, personCircle, personCircleOutline } from 'ionicons/icons';
+import { camera, cameraOutline, chevronForward, film, filmOutline, gitBranch, heart, heartCircle, heartDislike, heartDislikeCircleOutline, heartOutline, home, lockClosed, logOutOutline, mail, people, person, personCircle, personCircleOutline, settings } from 'ionicons/icons';
 
 addIcons({ home});
 addIcons({ heart });
@@ -18,6 +18,9 @@ addIcons({ camera });
 addIcons({ chevronForward });
 addIcons({ mail });
 addIcons({ heartDislikeCircleOutline });
+addIcons({ gitBranch });
+addIcons({ film });
+addIcons({ people });
 
 // Register Ionic PWA Elements (web components) if available.
 // This improves the camera/file input UI when running as a PWA in the browser.

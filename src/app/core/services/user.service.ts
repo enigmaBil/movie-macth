@@ -1,6 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject, Injector, runInInjectionContext } from '@angular/core';
 import { Auth, signInWithEmailAndPassword, signOut, User, authState, createUserWithEmailAndPassword, updateProfile } from '@angular/fire/auth';
-import { inject } from '@angular/core';
 import { doc, Firestore, setDoc, updateDoc, getDoc } from '@angular/fire/firestore';
 import { docData } from '@angular/fire/firestore';
 import { RegisterData } from '../models/user.model';
@@ -12,6 +11,7 @@ import { Observable } from 'rxjs';
 export class UserService {
   private auth = inject(Auth);
   private firestore = inject(Firestore);
+  private injector = inject(Injector);
 
   user$: Observable<User | null> = authState(this.auth);
 
@@ -56,13 +56,13 @@ export class UserService {
   // Real-time observable for user document (includes favorites)
   favorites$(uid: string) {
     const userRef = doc(this.firestore, 'users', uid);
-    return docData(userRef) as any;
+    return runInInjectionContext(this.injector, () => docData(userRef)) as any;
   }
 
   // Toggle a movie id in the user's favoriteMovieIds array
   async toggleFavorite(uid: string, movieId: string) {
     const userRef = doc(this.firestore, 'users', uid);
-    const snap = await getDoc(userRef as any);
+    const snap = await runInInjectionContext(this.injector, () => getDoc(userRef as any));
     if (!snap.exists()) {
       // create doc with favoriteMovieIds
       await setDoc(userRef, { favoriteMovieIds: [movieId] }, { merge: true });
@@ -72,13 +72,13 @@ export class UserService {
     const favs: string[] = data.favoriteMovieIds || [];
     const has = favs.includes(movieId);
     const newFavs = has ? favs.filter(id => id !== movieId) : [...favs, movieId];
-    await updateDoc(userRef as any, { favoriteMovieIds: newFavs });
+    await runInInjectionContext(this.injector, () => updateDoc(userRef as any, { favoriteMovieIds: newFavs }));
     return !has;
   }
 
   async getUserFavorites(uid: string) {
     const userRef = doc(this.firestore, 'users', uid);
-    const snap = await getDoc(userRef as any);
+    const snap = await runInInjectionContext(this.injector, () => getDoc(userRef as any));
     if (!snap.exists()) return [] as string[];
     const data: any = snap.data();
     return data.favoriteMovieIds || [];

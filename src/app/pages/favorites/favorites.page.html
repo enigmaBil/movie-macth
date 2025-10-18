@@ -19,8 +19,8 @@
       <ion-row class="ion-justify-content-center">
         @for (movie of movies; track movie.id) {
           <ion-col size-xs="12" size-sm="8" size-md="6">
-          <ion-card class="movie-card">
-            <img class="card-poster" [src]="movie.poster_path ? ('https://image.tmdb.org/t/p/w342' + movie.poster_path) : '/assets/icon/favicon.png'" [alt]="movie.title" />
+              <ion-card class="movie-card">
+                <img class="card-poster" [src]="getPosterUrl(movie.poster_path) || '/assets/icon/favicon.png'" [alt]="movie.title" />
             <ion-card-header>
               <ion-card-title style="font-size: 1rem;">{{ movie.title }}</ion-card-title>
             </ion-card-header>

@@ -10,42 +10,40 @@
     <p>Découvrez des films recommandés rien que pour vous.</p>
   </div>
 
-  @if (isLoading) {
-    <div class="loading-wrap ion-padding">
-      <ion-spinner name="crescent"></ion-spinner>
-    </div>
-  } @else {
-    <div class="movies-list ion-padding">
-      @for (movie of movies; track movie.id) {
-        <ion-card class="movie-card" [routerLink]="['/tabs/movie', movie.id]">
-          <div class="card-body">
-            <!-- Poster -->
-            <div class="poster-wrap">
-              <img [src]="posterUrl(movie.poster_path)" [alt]="movie.title" />
-            </div>
+  <div *ngIf="isLoading" class="loading-wrap ion-padding">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
 
-            <!-- Titre sous le poster -->
-            <div class="movie-info">
-              <h3 class="movie-title">{{ movie.title }}</h3>
-            </div>
-
-            <!-- Bouton cœur en bas à droite du poster (overlay) -->
-            <ion-button
-              class="fav-btn"
-              fill="clear"
-              size="small"
-              (click)="toggleFavorite(movie); $event.stopPropagation(); $event.preventDefault();"
-              [aria-label]="isFavorite(movie) ? 'Retirer des favoris' : 'Ajouter aux favoris'"
-            >
-              <ion-icon
-                [name]="isFavorite(movie) ? 'heart' : 'heart-outline'"
-                [color]="isFavorite(movie) ? 'danger' : 'danger'"
-                style="font-size: 24px;"
-              ></ion-icon>
-            </ion-button>
+  <div *ngIf="!isLoading" class="movies-list ion-padding">
+  <ng-container *ngFor="let movie of movies; trackBy: trackById">
+      <ion-card class="movie-card" [routerLink]="['/tabs/movie', movie.id]">
+        <div class="card-body">
+          <!-- Poster -->
+          <div class="poster-wrap">
+            <img [src]="posterUrl(movie.poster_path)" [alt]="movie.title" />
           </div>
-        </ion-card>
-      }
-    </div>
-  }
+
+          <!-- Titre sous le poster -->
+          <div class="movie-info">
+            <h3 class="movie-title">{{ movie.title }}</h3>
+          </div>
+
+          <!-- Bouton cœur en bas à droite du poster (overlay) -->
+          <ion-button
+            class="fav-btn"
+            fill="clear"
+            size="small"
+            (click)="toggleFavorite(movie); $event.stopPropagation(); $event.preventDefault();"
+            [aria-label]="isFavorite(movie) ? 'Retirer des favoris' : 'Ajouter aux favoris'"
+          >
+            <ion-icon
+              [name]="isFavorite(movie) ? 'heart' : 'heart-outline'"
+              [color]="isFavorite(movie) ? 'danger' : 'danger'"
+              style="font-size: 24px;"
+            ></ion-icon>
+          </ion-button>
+        </div>
+      </ion-card>
+    </ng-container>
+  </div>
 </ion-content>

@@ -1,7 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject, Injector, runInInjectionContext } from '@angular/core';
 import { Auth, updateProfile, updateEmail as fbUpdateEmail, updatePassword as fbUpdatePassword } from '@angular/fire/auth';
 import { Firestore, doc, updateDoc, getDoc } from '@angular/fire/firestore';
-import { inject } from '@angular/core';
 import { from, Observable, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { User } from '../models/user.model';
@@ -12,6 +11,7 @@ import { User } from '../models/user.model';
 export class ProfileService {
   private auth = inject(Auth);
   private firestore = inject(Firestore);
+  private injector = inject(Injector);
 
   // Récupère le profil complet (Firestore + Auth)
   getCurrentUserProfile(): Observable<User | null> {
@@ -19,7 +19,7 @@ export class ProfileService {
     if (!currentUser) return of(null);
 
     const userDocRef = doc(this.firestore, 'users', currentUser.uid);
-    return from(getDoc(userDocRef)).pipe(
+    return from(runInInjectionContext(this.injector, () => getDoc(userDocRef))).pipe(
       switchMap(snapshot => {
         if (snapshot.exists()) {
           return of(snapshot.data() as User);
@@ -37,7 +37,7 @@ export class ProfileService {
     await updateProfile(user, { displayName: `${firstName} ${lastName}` });
 
     const userDoc = doc(this.firestore, 'users', user.uid);
-    await updateDoc(userDoc, { firstName, lastName, age });
+    await runInInjectionContext(this.injector, () => updateDoc(userDoc, { firstName, lastName, age }));
   }
 
   // Sauvegarde la photo (Data URL) dans Firestore
@@ -46,7 +46,7 @@ export class ProfileService {
       throw new Error('Image trop grande. Veuillez réduire la qualité ou la taille.');
     }
     const userDoc = doc(this.firestore, 'users', uid);
-    await updateDoc(userDoc, { photoDataUrl: dataUrl });
+    await runInInjectionContext(this.injector, () => updateDoc(userDoc, { photoDataUrl: dataUrl }));
   }
 
   // Met à jour l'email de l'utilisateur (Auth + Firestore)
@@ -56,7 +56,7 @@ export class ProfileService {
 
     await fbUpdateEmail(user, newEmail);
     const userDoc = doc(this.firestore, 'users', user.uid);
-    await updateDoc(userDoc, { email: newEmail });
+    await runInInjectionContext(this.injector, () => updateDoc(userDoc, { email: newEmail }));
   }
 
   // Met à jour le mot de passe de l'utilisateur

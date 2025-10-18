@@ -4,7 +4,6 @@ import { Firestore } from '@angular/fire/firestore';
 import { environment } from 'src/environments/environment';
 import { MovieService, TmdbMovie } from 'src/app/core/services/movie.service';
 import { UserService } from 'src/app/core/services/user.service';
-import { firstValueFrom } from 'rxjs';
 import { Subscription } from 'rxjs';
 import { IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonSpinner, IonIcon } from '@ionic/angular/standalone';
 import { NgIf, NgForOf } from '@angular/common';
@@ -28,12 +27,17 @@ export class HomePage implements OnInit {
   isLoading = false;
   favorites = new Set<string>();
   private favSub?: Subscription;
+  private moviesSub?: Subscription;
 
   authReady = false;
   firestoreReady = false;
   tmdbReady = false;
 
   constructor() {}
+
+  trackById(index: number, item: any) {
+    return item.id;
+  }
 
   ngOnInit() {
     try { this.authReady = !!this.auth; } catch (e) { console.error('Auth error', e); }
@@ -44,15 +48,22 @@ export class HomePage implements OnInit {
     this.loadFavoritesIfLogged();
   }
 
-  async loadMovies() {
+  loadMovies() {
     this.isLoading = true;
-    try {
-      this.movies = await firstValueFrom(this.movieService.getPopular(1));
-    } catch (e) {
-      console.error('Error loading movies', e);
-    } finally {
-      this.isLoading = false;
-    }
+    // subscribe to combined stream (custom Firestore movies + TMDB popular)
+    this.moviesSub?.unsubscribe();
+    this.moviesSub = this.movieService.moviesStream(1).subscribe({
+      next: (ms) => {
+        this.zone.run(() => {
+          this.movies = ms as TmdbMovie[];
+          this.isLoading = false;
+        });
+      },
+      error: (err) => {
+        console.error('Error loading movies', err);
+        this.zone.run(() => { this.isLoading = false; });
+      }
+    });
   }
 
   posterUrl(path: string | null) {
@@ -79,6 +90,7 @@ export class HomePage implements OnInit {
 
   ngOnDestroy() {
     this.favSub?.unsubscribe();
+    this.moviesSub?.unsubscribe();
   }
 
   isFavorite(movie: TmdbMovie) {

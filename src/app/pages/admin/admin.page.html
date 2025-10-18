@@ -1,0 +1,17 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Administration</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-item routerLink="./users"> <ion-icon name="people"></ion-icon> Gestion des utilisateurs</ion-item>
+    <ion-item routerLink="./movies"> <ion-icon name="film"></ion-icon> Gestion des films</ion-item>
+  </ion-list>
+
+  <router-outlet></router-outlet>
+</ion-content>

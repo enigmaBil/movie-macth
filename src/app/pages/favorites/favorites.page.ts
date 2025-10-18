@@ -23,6 +23,17 @@ export class FavoritesPage implements OnInit {
   movies: TmdbMovie[] = [];
   isLoading = true;
   private favSub?: Subscription;
+  
+  // expose helper for template
+  getPosterUrl = (path: any) => {
+    // TMDB uses poster_path, admin custom movies may use posterPath
+    const p = path || (path === undefined ? null : null);
+    // Try both keys when passed the whole movie object by mistake
+    if (!p && typeof (path) === 'object' && path) {
+      return this.movieService.getPosterUrl((path as any).poster_path || (path as any).posterPath || null);
+    }
+    return this.movieService.getPosterUrl(p as string | null);
+  }
 
   constructor() {}
 
@@ -62,5 +73,9 @@ export class FavoritesPage implements OnInit {
 
   ngOnDestroy() {
     this.favSub?.unsubscribe();
+  }
+
+  posterUrl(path: string | null) {
+    return this.movieService.getPosterUrl(path) || '/assets/icon/favicon.png';
   }
 }

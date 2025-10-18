@@ -1,0 +1,22 @@
+<ion-content class="ion-padding">
+  <div *ngIf="!userId">Veuillez vous connecter pour voir les matches.</div>
+  <div *ngIf="userId">
+    <ion-list *ngIf="matches && matches.length > 0">
+      <ion-item *ngFor="let m of matches">
+        <ion-label>
+          <h3>{{ m.displayName || m.userId }}</h3>
+          <p>{{ m.commonCount }} films en commun</p>
+          <div class="common-movies">
+            <ng-container *ngFor="let mid of m.commonMovieIds">
+              <a [routerLink]="['/tabs/movie', mid]" class="common-movie">
+                <img [src]="getPosterForId(mid)" alt="" />
+                <small>{{ movieDetailsMap[mid]?.title || '—' }}</small>
+              </a>
+            </ng-container>
+          </div>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+    <div *ngIf="matches && matches.length === 0">Aucun match trouvé pour l'instant.</div>
+  </div>
+</ion-content>
