@@ -1,8 +1,8 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, Injector, runInInjectionContext } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonContent, IonList, IonItem, IonLabel } from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';
-import { Auth } from '@angular/fire/auth';
+import { Auth, onAuthStateChanged } from '@angular/fire/auth';
 import { MatchingService, UserMatch } from 'src/app/core/services/matching.service';
 import { MovieService, TmdbMovie } from 'src/app/core/services/movie.service';
 import { firstValueFrom } from 'rxjs';
@@ -17,6 +17,7 @@ import { Subscription } from 'rxjs';
 })
 export class MatchingPage implements OnInit, OnDestroy {
   private auth = inject(Auth);
+  private injector = inject(Injector);
   private matchingService = inject(MatchingService);
   movieService = inject(MovieService);
 
@@ -36,10 +37,21 @@ export class MatchingPage implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    const u = this.auth.currentUser;
-    if (!u) return;
-    this.userId = u.uid;
-    this.sub = this.matchingService.matchesForUser(u.uid).subscribe(async list => {
+    // Listen to auth state reactively to ensure we have the user when available
+    runInInjectionContext(this.injector, () => {
+      onAuthStateChanged(this.auth, (u) => {
+        if (!u) {
+          // not logged in
+          this.userId = null;
+          this.sub?.unsubscribe();
+          this.sub = undefined;
+          this.matches = [];
+          return;
+        }
+        this.userId = u.uid;
+        // subscribe to matches for this user
+        this.sub?.unsubscribe();
+        this.sub = this.matchingService.matchesForUser(u.uid).subscribe(async list => {
       this.matches = list;
       // collect unique movie ids
   const ids = Array.from(new Set(list.reduce((acc: string[], m) => acc.concat(m.commonMovieIds || []), [] as string[])));
@@ -59,6 +71,8 @@ export class MatchingPage implements OnInit, OnDestroy {
       // ensure existing ids are in map
       ids.forEach(id => {
         if (!this.movieDetailsMap[id]) this.movieDetailsMap[id] = this.movieCache.get(id) || null;
+      });
+        });
       });
     });
   }
