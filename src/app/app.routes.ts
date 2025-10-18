@@ -23,11 +23,6 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/movie-details/movie-details.page').then(m => m.MovieDetailsPage)
       },
       {
-        path: 'matching',
-        loadComponent: () => import('./pages/matching/matching.page').then(m => m.MatchingPage),
-        canActivate: [() => import('./core/guards/auth.guard').then(m => m.authGuard)]
-      },
-      {
         path: 'favorites',
         loadComponent: () => import('./pages/favorites/favorites.page').then(m => m.FavoritesPage),
         canActivate: [() => import('./core/guards/auth.guard').then(m => m.authGuard)]
@@ -35,6 +30,11 @@ export const routes: Routes = [
       {
         path: 'profile',
         loadComponent: () => import('./pages/profile/profile.page').then(m => m.ProfilePage),
+        canActivate: [() => import('./core/guards/auth.guard').then(m => m.authGuard)]
+      },
+      {
+        path: 'matching',
+        loadComponent: () => import('./pages/matching/matching.page').then(m => m.MatchingPage),
         canActivate: [() => import('./core/guards/auth.guard').then(m => m.authGuard)]
       },
       {
@@ -65,6 +65,11 @@ export const routes: Routes = [
         path: 'admin',
         loadComponent: () => import('./pages/admin/admin.page').then(m => m.AdminPage),
         canActivate: [() => import('./core/guards/admin.guard').then(m => m.adminGuard)]
+      },
+      {
+        path: 'matching',
+        redirectTo: '/tabs/matching',
+        pathMatch: 'full'
       },
   {
     path: 'forgot-password',

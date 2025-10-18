@@ -1,22 +1,33 @@
 <ion-content class="ion-padding">
-  <div *ngIf="!userId">Veuillez vous connecter pour voir les matches.</div>
-  <div *ngIf="userId">
-    <ion-list *ngIf="matches && matches.length > 0">
-      <ion-item *ngFor="let m of matches">
-        <ion-label>
-          <h3>{{ m.displayName || m.userId }}</h3>
-          <p>{{ m.commonCount }} films en commun</p>
-          <div class="common-movies">
-            <ng-container *ngFor="let mid of m.commonMovieIds">
-              <a [routerLink]="['/tabs/movie', mid]" class="common-movie">
-                <img [src]="getPosterForId(mid)" alt="" />
-                <small>{{ movieDetailsMap[mid]?.title || '—' }}</small>
-              </a>
-            </ng-container>
-          </div>
-        </ion-label>
-      </ion-item>
-    </ion-list>
-    <div *ngIf="matches && matches.length === 0">Aucun match trouvé pour l'instant.</div>
-  </div>
+  @if (isLoading) {
+    <div>Chargement des matches...</div>
+  } @else {
+    @if (!userId) {
+      <div>Veuillez vous connecter pour voir les matches.</div>
+    } @else {
+      @if (matches && matches.length > 0) {
+        <ion-list style="margin-top: 2.5rem;">
+          <ion-label><small>Ils suivent les mêmes films que vous</small></ion-label>
+          @for (m of matches; track m.userId) {
+            <ion-item lines="none">
+              <ion-label>
+                <h3>{{ m.displayName }}</h3>
+                <p>{{ m.commonCount }} films en commun ({{ m.matchPercentage | number:'1.0-2' }}%)</p>
+                <div class="common-movies">
+                  @for (mid of m.commonMovieIds; track mid) {
+                    <a [routerLink]="['/tabs/movie', mid]" class="common-movie">
+                      <img [src]="getPosterForId(mid)" alt="" />
+                      <small>{{ movieDetailsMap[mid]?.title || '—' }}</small>
+                    </a>
+                  }
+                </div>
+              </ion-label>
+            </ion-item>
+          }
+        </ion-list>
+      } @else {
+        <div>Aucun match trouvé pour l'instant (75% de similarité requise).</div>
+      }
+    }
+  }
 </ion-content>
